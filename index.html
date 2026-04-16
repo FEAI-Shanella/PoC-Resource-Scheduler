@@ -1157,21 +1157,12 @@ async function deleteRequest(id) {
   closeModal();
   showSpStatus('loading', 'Deleting...');
   try {
-    // Delete calendar event if we have the ID
-    if (r.calendarEventId) {
-      await fetch(PA_DELETE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId: r.id, calendarEventId: r.calendarEventId })
-      });
-    }
-    // Delete SharePoint item via direct API
-    const digest = await getDigest();
-    await fetch(`${SP_API}(${r.id})`, {
+    const res = await fetch(PA_DELETE_URL, {
       method: 'POST',
-      headers: { 'Accept': 'application/json;odata=verbose', 'Content-Type': 'application/json;odata=verbose', 'X-RequestDigest': digest, 'X-HTTP-Method': 'DELETE', 'IF-MATCH': '*' },
-      credentials: 'include'
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: r.id, calendarEventId: r.calendarEventId || '' })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     hideSpStatus();
     showToast(`✓ "${r.pocName}" deleted from scheduler and calendar.`);
     await loadRequests();
